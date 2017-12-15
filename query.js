@@ -21,8 +21,6 @@ db.employees.aggregate( [ { $match: { $and: [ { dob: { $gt: new Date("1990") } }
 // No. of drivers working for each shift period in a given month.
 db.shifts.aggregate( [ { $unwind: "$on_duty" }, { $lookup: { from: "drivers" , localField: "on_duty.employee_id", foreignField: "employee_id", as: "driver_docs"} }, { $project: { date: 1, period: 1, on_duty: 1, "driver_docs": { $filter: {  input: "$driver_docs", as: "driver_doc", cond: { $eq: [ "$$driver_doc.employee_id", "on_duty.employee_id" ] } } } } } ] );
 
-db.shifts.aggregate( [ { $unwind: "$on_duty" }, { $lookup: { from: "drivers" , localField: "on_duty.employee_id", foreignField: "employee_id", as: "driver_docs"} }, { $project: { date: 1, period: 1, on_duty: 1, "driver_docs": { $filter: {  input: "$driver_docs", as: "driver_doc", cond: { $eq: [ "$$driver_doc.employee_id", "on_duty.employee_id" ] } } } } } ] );
-
 // Compute total of all overhead costs for a given document. 
 db.overheadCosts.aggregate( [ { $project: { total: { $sum: [ "$lighting", "$heating", "$fuel"] } } } ] )
 
