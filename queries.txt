@@ -1,0 +1,6 @@
+Aggregate operators
+----
+db.operators.aggregate([{$match:{name:'Tim'}},{$lookup:{from:employees,localField:'employee_id',foreignField:'_id',as:'employee_detail'}}])
+---
+age of employees:
+db.employees.aggregate( [{ $project: { _id: "$dob", age: { $divide: [ { $subtract: [ new Date(), "$dob" ] }, (365*24*60*60*1000) ] } } }] )
