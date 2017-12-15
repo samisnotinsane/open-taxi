@@ -25,3 +25,34 @@ db.shifts.aggregate( [ { $unwind: "$on_duty" }, { $lookup: { from: "drivers" , l
 
 // Compute total of all overhead costs for a given document. 
 db.overheadCosts.aggregate( [ { $project: { total: { $sum: [ "$lighting", "$heating", "$fuel"] } } } ] )
+
+// CAUTION: Not fully implemented!
+db.shifts.aggregate( [ { $unwind: "$on_duty" }, { $lookup: { from: "employees", localField: "on_duty.employee_id", foreignField: "_id", as: "employee_docs" } }, { $project: { period: 1 } }  ] ) 
+
+// Group employees by cities.
+db.employees.aggregate( [ 
+    { $group: {
+            _id: { city: "$city" },
+            count: { $sum: 1 }
+        }
+    } 
+])
+
+// Get the number of duplicate employees by their email address.
+db.employees.aggregate( [
+    { $group: {
+            _id: { email: "$email" },
+            uniqueEmails: { $addToSet: "$_id" },
+            count: { $sum: 1 }
+        }
+    },
+    { $match: { 
+        count: { "$gt": 1 }
+        }
+    },
+    {
+        $sort: {
+            count: -1
+        }
+    }
+])
