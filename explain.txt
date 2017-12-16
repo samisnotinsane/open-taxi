@@ -1,0 +1,81 @@
+db.employees.find({ city: "London" }).pretty().explain()
+{
+	"queryPlanner" : {
+		"plannerVersion" : 1,
+		"namespace" : "openTaxi.employees",
+		"indexFilterSet" : false,
+		"parsedQuery" : {
+			"city" : {
+				"$eq" : "London"
+			}
+		},
+		"winningPlan" : {
+			"stage" : "COLLSCAN",
+			"filter" : {
+				"city" : {
+					"$eq" : "London"
+				}
+			},
+			"direction" : "forward"
+		},
+		"rejectedPlans" : [ ]
+	},
+	"serverInfo" : {
+		"host" : "orion-xi.local",
+		"port" : 27017,
+		"version" : "3.4.10",
+		"gitVersion" : "078f28920cb24de0dd479b5ea6c66c644f6326e9"
+	},
+	"ok" : 1
+}
+
+MongoDB's explain method produces a breakdown of how queries execute. It does so by producing plans, which are essentially
+breakdowns of how a given query is evaluated in the system. From the output produced by explain, 'winningPlan' is a plan that is 
+determined by running all possible plans in parallel and picking whichever one is best performing. 'COLLSCAN' is a stage in 
+'winningPlan' which tells us that a collection scan was performed. If a collection has to be scanned, it means that its scan 
+performance can be improved by using indices.
+
+
+
+-explain method shows how queries execute and behave
+-a plan is a breakdown of how a query is evaluated
+-winningPlan is determined by running all possible plans in parallel and picking whichever one appears to be the the best performing
+-COLLSCAN is a type of winningPlan which indicates a collection scan, and it also means that its performance can be improved by using indices.
+
+
+db.employees.find({ city: "London" }).pretty().explain('executionStats')
+	"executionStats" : {
+		"executionSuccess" : true,
+		"nReturned" : 8,
+		"executionTimeMillis" : 0,
+		"totalKeysExamined" : 0,
+		"totalDocsExamined" : 11,
+		"executionStages" : {
+			"stage" : "COLLSCAN",
+			"filter" : {
+				"city" : {
+					"$eq" : "London"
+				}
+			},
+			"nReturned" : 8,
+			"executionTimeMillisEstimate" : 0,
+			"works" : 13,
+			"advanced" : 8,
+			"needTime" : 4,
+			"needYield" : 0,
+			"saveState" : 0,
+			"restoreState" : 0,
+			"isEOF" : 1,
+			"invalidates" : 0,
+			"direction" : "forward",
+			"docsExamined" : 11
+		}
+	},
+}
+In this query, we pass in 'executionStats' argument to explain method, which produces various statistics on the execution of 
+the query such as if its execution was successful and the number of documents returned. By inspecting 'totalDocsExamined', we see 
+that all 11 documents were traversed - this is further backed by the presence of 'COLLSCAN' under 'executionStages' which, as stated 
+previously, implies that the collection is not indexed.
+
+> we can see that execution was successfull,
+all 11 documents were examined by the query because a 'COLLSCAN' occurred impliying the collection was not indexed.
